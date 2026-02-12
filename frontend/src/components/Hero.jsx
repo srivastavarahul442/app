@@ -2,20 +2,49 @@ import React, { useState } from 'react';
 import { Search, MapPin, Calendar, Users } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { heroImages } from '../data/mock';
+import { search } from '../services/api';
+import { toast } from 'sonner';
 
-export const Hero = () => {
+const heroImages = [
+  "https://images.unsplash.com/photo-1747224652373-8b97724573c7",
+  "https://images.unsplash.com/photo-1488249949762-27e8bf62988b",
+  "https://images.unsplash.com/photo-1670126426026-9ce4666817e7"
+];
+
+export const Hero = ({ onSearchResults }) => {
   const [searchData, setSearchData] = useState({
     destination: '',
     date: '',
     travelers: ''
   });
+  const [searching, setSearching] = useState(false);
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    console.log('Search data:', searchData);
-    // Search functionality will be implemented
-    alert(`Searching for: ${searchData.destination || 'all destinations'}`);
+    
+    if (!searchData.destination) {
+      toast.error('Please enter a destination to search');
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const results = await search(searchData.destination);
+      const totalResults = (results.destinations?.length || 0) + (results.packages?.length || 0);
+      
+      if (totalResults > 0) {
+        toast.success(`Found ${totalResults} results for "${searchData.destination}"`);
+        if (onSearchResults) {
+          onSearchResults(results);
+        }
+      } else {
+        toast.info(`No results found for "${searchData.destination}"`);
+      }
+    } catch (error) {
+      toast.error('Search failed. Please try again.');
+    } finally {
+      setSearching(false);
+    }
   };
 
   return (
@@ -86,10 +115,11 @@ export const Hero = () => {
               <div className="md:col-span-1">
                 <Button 
                   type="submit" 
-                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base"
+                  disabled={searching}
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base disabled:opacity-50"
                 >
                   <Search className="w-5 h-5 mr-2" />
-                  Search
+                  {searching ? 'Searching...' : 'Search'}
                 </Button>
               </div>
             </div>
