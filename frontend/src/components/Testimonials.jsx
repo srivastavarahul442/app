@@ -1,8 +1,27 @@
-import React from 'react';
-import { Star, Quote } from 'lucide-react';
-import { testimonials } from '../data/mock';
+import React, { useState, useEffect } from 'react';
+import { Star, Quote, Loader2 } from 'lucide-react';
+import { getTestimonials } from '../services/api';
 
 export const Testimonials = () => {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  const fetchTestimonials = async () => {
+    try {
+      setLoading(true);
+      const data = await getTestimonials();
+      setTestimonials(data);
+    } catch (err) {
+      console.error('Error loading testimonials:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section id="testimonials" className="py-20 bg-slate-50">
       <div className="container mx-auto px-4">
@@ -15,7 +34,12 @@ export const Testimonials = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial) => (
             <div
               key={testimonial.id}
@@ -49,7 +73,8 @@ export const Testimonials = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
 
         {/* Additional testimonial image section */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
