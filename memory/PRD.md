@@ -167,14 +167,150 @@ Design a modern, clean, luxury travel website for India and Nepal tour packages.
 
 ---
 
+## API Contracts & Backend Implementation Plan
+
+### Database Models
+
+#### 1. Destination Model
+```python
+{
+  "_id": ObjectId,
+  "name": str,
+  "description": str,
+  "image": str,
+  "price": str,
+  "duration": str,
+  "rating": float,
+  "country": str,  # "india" or "nepal"
+  "location": str,  # specific location
+  "created_at": datetime,
+  "updated_at": datetime
+}
+```
+
+#### 2. Package Model
+```python
+{
+  "_id": ObjectId,
+  "title": str,
+  "description": str,
+  "image": str,
+  "price": str,
+  "duration": str,
+  "destinations": List[str],
+  "highlights": List[str],
+  "rating": float,
+  "reviews": int,
+  "itinerary": List[dict],  # day-wise itinerary
+  "included": List[str],
+  "excluded": List[str],
+  "created_at": datetime,
+  "updated_at": datetime
+}
+```
+
+#### 3. Booking Model
+```python
+{
+  "_id": ObjectId,
+  "booking_id": str,  # unique booking reference
+  "package_id": str,
+  "package_name": str,
+  "customer_name": str,
+  "email": str,
+  "phone": str,
+  "travelers": int,
+  "travel_date": datetime,
+  "special_requests": str,
+  "total_amount": str,
+  "status": str,  # "pending", "confirmed", "cancelled"
+  "created_at": datetime,
+  "updated_at": datetime
+}
+```
+
+#### 4. Contact Inquiry Model
+```python
+{
+  "_id": ObjectId,
+  "name": str,
+  "email": str,
+  "phone": str,
+  "subject": str,
+  "message": str,
+  "status": str,  # "new", "responded", "closed"
+  "created_at": datetime
+}
+```
+
+#### 5. Testimonial Model
+```python
+{
+  "_id": ObjectId,
+  "name": str,
+  "location": str,
+  "image": str,
+  "rating": int,
+  "comment": str,
+  "tour": str,
+  "approved": bool,
+  "created_at": datetime
+}
+```
+
+### API Endpoints
+
+#### Public APIs
+- `GET /api/destinations` - Get all destinations (with optional filter: country)
+- `GET /api/destinations/{id}` - Get single destination
+- `GET /api/packages` - Get all packages
+- `GET /api/packages/{id}` - Get single package
+- `GET /api/testimonials` - Get approved testimonials
+- `POST /api/bookings` - Create new booking
+- `POST /api/contact` - Submit contact inquiry
+- `POST /api/search` - Search destinations/packages
+
+#### Admin APIs (Protected)
+- `POST /api/admin/login` - Admin authentication
+- `GET /api/admin/bookings` - Get all bookings
+- `PUT /api/admin/bookings/{id}` - Update booking status
+- `DELETE /api/admin/bookings/{id}` - Delete booking
+- `GET /api/admin/inquiries` - Get all contact inquiries
+- `PUT /api/admin/inquiries/{id}` - Update inquiry status
+- `POST /api/admin/destinations` - Create destination
+- `PUT /api/admin/destinations/{id}` - Update destination
+- `DELETE /api/admin/destinations/{id}` - Delete destination
+- `POST /api/admin/packages` - Create package
+- `PUT /api/admin/packages/{id}` - Update package
+- `DELETE /api/admin/packages/{id}` - Delete package
+
+### Mock Data to Replace
+All data in `/app/frontend/src/data/mock.js` will be replaced with API calls:
+- `biharDestinations` → GET /api/destinations?country=india
+- `nepalDestinations` → GET /api/destinations?country=nepal
+- `featuredPackages` → GET /api/packages
+- `testimonials` → GET /api/testimonials
+
+### Frontend Changes Required
+1. Create API service layer (`/app/frontend/src/services/api.js`)
+2. Update all components to fetch from APIs
+3. Add loading states and error handling
+4. Create booking modal/page
+5. Create admin dashboard pages
+6. Add admin authentication
+
 ## Next Action Items
 
-1. **User Confirmation**: Ask user if they want to proceed with backend development
-2. **Backend Setup**: Create MongoDB models for destinations, packages, testimonials, and contact inquiries
-3. **API Development**: Build RESTful API endpoints
-4. **Integration**: Connect frontend to backend APIs
-5. **Testing**: Test all functionality end-to-end
-6. **Deployment**: Prepare for production deployment
+1. ✅ **User Confirmation**: Confirmed - proceeding with backend development
+2. **Backend Development**: 
+   - Create MongoDB models
+   - Build API endpoints
+   - Seed initial data
+3. **Frontend Integration**: Replace mock data with API calls
+4. **Booking Flow**: Implement complete booking functionality
+5. **Admin Dashboard**: Build admin panel for managing bookings
+6. **Testing**: Test all functionality with testing agent
+7. **Deployment**: Ready for production
 
 ---
 
