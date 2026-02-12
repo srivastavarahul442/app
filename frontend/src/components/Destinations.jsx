@@ -1,18 +1,37 @@
-import React, { useState } from 'react';
-import { MapPin, Star, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Star, Clock, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
-import { biharDestinations, nepalDestinations } from '../data/mock';
+import { getDestinations } from '../services/api';
 
 export const Destinations = () => {
   const [activeTab, setActiveTab] = useState('all');
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const getFilteredDestinations = () => {
-    if (activeTab === 'bihar') return biharDestinations;
-    if (activeTab === 'nepal') return nepalDestinations;
-    return [...biharDestinations, ...nepalDestinations];
+  useEffect(() => {
+    fetchDestinations();
+  }, [activeTab]);
+
+  const fetchDestinations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      let country = null;
+      if (activeTab === 'bihar') country = 'india';
+      if (activeTab === 'nepal') country = 'nepal';
+      
+      const data = await getDestinations(country);
+      setDestinations(data);
+    } catch (err) {
+      setError('Failed to load destinations');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredDestinations = getFilteredDestinations();
+  const filteredDestinations = destinations;
 
   return (
     <section id="destinations" className="py-20 bg-slate-50">
@@ -60,8 +79,26 @@ export const Destinations = () => {
           </Button>
         </div>
 
+        {/* Loading state */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+          </div>
+        )}
+
+        {/* Error state */}
+        {error && (
+          <div className="text-center py-20">
+            <p className="text-red-600 text-lg">{error}</p>
+            <Button onClick={fetchDestinations} className="mt-4 bg-blue-600 hover:bg-blue-700">
+              Try Again
+            </Button>
+          </div>
+        )}
+
         {/* Destinations grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredDestinations.map((destination) => (
             <div
               key={destination.id}
@@ -101,7 +138,8 @@ export const Destinations = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );
