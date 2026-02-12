@@ -1,11 +1,33 @@
-import React from 'react';
-import { Star, Clock, MapPin, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Star, Clock, MapPin, Check, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { featuredPackages } from '../data/mock';
+import { getPackages } from '../services/api';
 
-export const FeaturedPackages = () => {
+export const FeaturedPackages = ({ onBookNow }) => {
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchPackages();
+  }, []);
+
+  const fetchPackages = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getPackages();
+      setPackages(data);
+    } catch (err) {
+      setError('Failed to load packages');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section id="packages" className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -18,8 +40,24 @@ export const FeaturedPackages = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {featuredPackages.map((pkg) => (
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-20">
+            <p className="text-red-600 text-lg">{error}</p>
+            <Button onClick={fetchPackages} className="mt-4 bg-blue-600 hover:bg-blue-700">
+              Try Again
+            </Button>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {packages.map((pkg) => (
             <Card key={pkg.id} className="group overflow-hidden border-2 border-slate-100 hover:border-blue-200 hover:shadow-2xl transition-all duration-300">
               <div className="relative h-64 overflow-hidden">
                 <img
@@ -85,13 +123,17 @@ export const FeaturedPackages = () => {
                   <div className="text-sm text-slate-500">Starting from</div>
                   <div className="text-3xl font-bold text-blue-600">{pkg.price}</div>
                 </div>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button 
+                  onClick={() => onBookNow && onBookNow(pkg)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
                   Book Now
                 </Button>
               </CardFooter>
             </Card>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );
