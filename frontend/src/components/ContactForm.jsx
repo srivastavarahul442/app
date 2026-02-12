@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
+import { createContactInquiry } from '../services/api';
 
 export const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -13,18 +14,27 @@ export const ContactForm = () => {
     subject: '',
     message: ''
   });
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    toast.success('Thank you for your inquiry! We will get back to you soon.');
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      subject: '',
-      message: ''
-    });
+    setSubmitting(true);
+    
+    try {
+      await createContactInquiry(formData);
+      toast.success('Thank you for your inquiry! We will get back to you soon.');
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+      });
+    } catch (error) {
+      toast.error('Failed to submit inquiry. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -184,10 +194,17 @@ export const ContactForm = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-base font-semibold"
+                disabled={submitting}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-base font-semibold disabled:opacity-50"
               >
-                <Send className="w-5 h-5 mr-2" />
-                Send Message
+                {submitting ? (
+                  <>Sending...</>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5 mr-2" />
+                    Send Message
+                  </>
+                )}
               </Button>
             </form>
           </div>
